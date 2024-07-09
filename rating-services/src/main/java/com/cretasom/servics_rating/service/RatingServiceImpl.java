@@ -3,6 +3,7 @@ package com.cretasom.servics_rating.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -16,7 +17,8 @@ public class RatingServiceImpl {
 
 	List<Rating> ratingList = new ArrayList<>();
 	int i = 1;
-
+	@Autowired
+	private RestTemplate restTemplate;
 //	@Autowired
 //	private HotelServiceImpl hotelImpl;
 //	@Autowired
@@ -41,9 +43,9 @@ public class RatingServiceImpl {
 	}
 
 	public List<RatingDTO> getAllRating() {
-		RestTemplate restTemplate = new RestTemplate();
-		String hotelUri = "http://localhost:8090/hotel/get/";
-		String usersUri = "http://localhost:8091/users/get/";
+
+		String hotelUri = "http://HOTEL-SERVICES/hotel/get/";
+		String usersUri = "http://USER-SERVICES/users/get/";
 		// return ratingList;
 
 		List<RatingDTO> ratingDtoList = new ArrayList<>();
