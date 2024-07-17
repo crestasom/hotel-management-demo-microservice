@@ -2,7 +2,10 @@ package com.cretasom.servics_rating.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -11,43 +14,57 @@ import com.cretasom.servics_rating.entity.Rating;
 import com.cretasom.servics_rating.entity.RatingDTO;
 import com.cretasom.servics_rating.entity.external.Hotel;
 import com.cretasom.servics_rating.entity.external.User;
+import com.cretasom.servics_rating.repo.RatingRepo;
+import com.cretasom.servics_rating.repo.external.HotelRepo;
+import com.cretasom.servics_rating.repo.external.UserRepo;
 
 @Service
 public class RatingServiceImpl {
 
-	List<Rating> ratingList = new ArrayList<>();
-	int i = 1;
+	@Autowired
+	RatingRepo repo;
+	@Autowired
+	UserRepo userRepo;
+	@Autowired
+	HotelRepo hotelRepo;
+//	List<Rating> ratingList = new ArrayList<>();
+//	private Set<Integer> userIdList = new HashSet<>();
+//	private Set<Integer> hotelIdList = new HashSet<>();
+//	int i = 1;
 	@Autowired
 	private RestTemplate restTemplate;
+
+	Logger logger = LoggerFactory.getLogger(getClass());
 //	@Autowired
 //	private HotelServiceImpl hotelImpl;
 //	@Autowired
 //	private UserServiceImpl userImpl;
 
 	public Rating addRating(Rating rating) {
-		// TODO Auto-generated method stub
-		rating.setId(i);
-		i++;
-		ratingList.add(rating);
-		return rating;
+
+		if (hotelRepo.findById(rating.getHotelId()).isEmpty()) {
+			throw new RuntimeException("hotel id not valid");
+		}
+		if (userRepo.findById(rating.getUserId()).isEmpty()) {
+			throw new RuntimeException("user id not valid");
+		}
+		return repo.save(rating);
+
 	}
 
-	public Rating getRating(int id) {
+	public Rating getRating(String id) {
 		// id 1,2,4
-		for (Rating u : ratingList) {
-			if (u.getId() == id) {
-				return u;
-			}
-		}
-		return null;
+		Optional<Rating> rating = repo.findById(id);
+
+		return rating.isPresent() ? rating.get() : null;
 	}
 
 	public List<RatingDTO> getAllRating() {
-
+		List<Rating> ratingList = repo.findAll();
 		String hotelUri = "http://HOTEL-SERVICES/hotel/get/";
 		String usersUri = "http://USER-SERVICES/users/get/";
-		// return ratingList;
-
+//		// return ratingList;
+//
 		List<RatingDTO> ratingDtoList = new ArrayList<>();
 		for (Rating r : ratingList) {
 			RatingDTO rd = new RatingDTO();
@@ -60,6 +77,20 @@ public class RatingServiceImpl {
 			ratingDtoList.add(rd);
 		}
 		return ratingDtoList;
+	}
+
+	public void addUserId(String userId) {
+		User user = new User();
+		user.setId(userId);
+		userRepo.save(user);
+		// userIdList.add(userId);
+	}
+
+	public void addHotelId(String hotelId) {
+		Hotel h = new Hotel();
+		h.setId(hotelId);
+		hotelRepo.save(h);
+		// hotelIdList.add(hotelId);
 	}
 
 }

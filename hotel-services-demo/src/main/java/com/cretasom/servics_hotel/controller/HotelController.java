@@ -17,16 +17,11 @@ import com.cretasom.servics_hotel.service.HotelServiceImpl;
 @RequestMapping("/hotel")
 public class HotelController {
 
-	public HotelController() {
-		System.out.println("Creating bean of User controller");
-	}
-
 	@Autowired
 	private HotelServiceImpl hotelService;
 
 	@PostMapping("/")
 	public Hotel addHotel(@RequestBody Hotel hotel) {
-		System.out.println(hotel);
 		return hotelService.addHotel(hotel);
 	}
 
@@ -36,7 +31,7 @@ public class HotelController {
 	}
 
 	@GetMapping("/get/{id}")
-	public Hotel getHotel(@PathVariable int id) {
+	public Hotel getHotel(@PathVariable String id) {
 		return hotelService.getHotel(id);
 	}
 }

@@ -1,38 +1,42 @@
 package com.cretasom.servics_hotel.service;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.cretasom.servics_hotel.config.MqttGateway;
 import com.cretasom.servics_hotel.entity.Hotel;
+import com.cretasom.servics_hotel.repo.HotelRepo;
 
 @Service
 public class HotelServiceImpl {
 
-	List<Hotel> hotelList = new ArrayList<>();
-	int i = 1;
+	@Autowired
+	private HotelRepo repo;
+
+	@Autowired
+	MqttGateway mqtGateway;
 
 	public Hotel addHotel(Hotel hotel) {
 		// TODO Auto-generated method stub
-		hotel.setId(i);
-		i++;
-		hotelList.add(hotel);
-		return hotel;
+		hotel.setId(UUID.randomUUID().toString());
+		mqtGateway.senToMqtt(hotel.getId(), "hotelIdTopic");
+		Hotel h1 = repo.save(hotel);
+		return h1;
 	}
 
-	public Hotel getHotel(int id) {
+	public Hotel getHotel(String id) {
 		// id 1,2,4
-		for (Hotel h : hotelList) {
-			if (h.getId() == id) {
-				return h;
-			}
-		}
-		return null;
+		Optional<Hotel> hotel = repo.findById(id);
+		return hotel.isPresent() ? hotel.get() : null;
+
 	}
 
 	public List<Hotel> getAllHotel() {
-		return hotelList;
+		return repo.findAll();
 	}
 
 }
