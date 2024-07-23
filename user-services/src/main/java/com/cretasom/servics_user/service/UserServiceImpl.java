@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,11 +19,16 @@ public class UserServiceImpl {
 	UserRepo repo;
 	@Autowired
 	MqttGateway mqtGateway;
+	Logger logger = LoggerFactory.getLogger(getClass());
 
 	public User addUser(User user) {
 		// TODO Auto-generated method stub
 		user.setId(UUID.randomUUID().toString());
-		mqtGateway.senToMqtt(user.getId(), "userIdTopic");
+		try {
+			mqtGateway.senToMqtt(user.getId(), "userIdTopic");
+		} catch (Exception ex) {
+			logger.warn("cannot sent message to mqtt");
+		}
 		repo.save(user);
 		return user;
 	}

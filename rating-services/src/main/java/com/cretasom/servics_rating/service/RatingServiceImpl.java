@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -33,6 +34,8 @@ public class RatingServiceImpl {
 //	int i = 1;
 	@Autowired
 	private RestTemplate restTemplate;
+	@Value("${validate.data}")
+	private boolean validateData;
 
 	Logger logger = LoggerFactory.getLogger(getClass());
 //	@Autowired
@@ -42,10 +45,10 @@ public class RatingServiceImpl {
 
 	public Rating addRating(Rating rating) {
 
-		if (hotelRepo.findById(rating.getHotelId()).isEmpty()) {
+		if (validateData && hotelRepo.findById(rating.getHotelId()).isEmpty()) {
 			throw new RuntimeException("hotel id not valid");
 		}
-		if (userRepo.findById(rating.getUserId()).isEmpty()) {
+		if (validateData && userRepo.findById(rating.getUserId()).isEmpty()) {
 			throw new RuntimeException("user id not valid");
 		}
 		return repo.save(rating);

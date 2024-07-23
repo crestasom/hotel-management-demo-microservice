@@ -1,0 +1,15 @@
+services:
+  hotel-discovery-server:
+    container_name: hotel-discovery-server
+    image: hotel-discovery-server:latest
+    ports:
+      - 8094:8094
+  hotel-api-gateway:
+    container_name: hotel-api-gateway
+    image: hotel-api-gateway:latest
+    ports:
+      - 8095:8095
+    environment:
+      EUREKA_SERVER: hotel-discovery-server
+    depends_on:
+      - hotel-discovery-server

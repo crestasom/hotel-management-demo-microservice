@@ -1,0 +1,80 @@
+services:
+  hotel-discovery-server:
+    container_name: hotel-discovery-server
+    image: hotel-discovery-server:latest
+    ports:
+      - 8094:8094
+    networks:
+      - ms-network
+  hotel-api-gateway:
+    container_name: hotel-api-gateway
+
+    image: hotel-api-gateway:latest
+    ports:
+      - 8095:8095
+    environment:
+      EUREKA_HOST: hotel-discovery-server
+    networks:
+      - ms-network
+    depends_on:
+      - hotel-discovery-server
+
+  user-service:
+    container_name: user-service
+    image: user-service:latest
+    build:
+      context: ../user-services
+      dockerfile: Dockerfile
+    ports:
+      - 8091:8091
+    environment:
+      EUREKA_HOST: hotel-discovery-server
+      MY_SQL_DB_HOST: mysqldb
+      MY_SQL_DB_USERNAME: root
+      MY_SQL_DB_PASSWORD: example
+      MQTT_HOST: host.docker.internal
+    networks:
+      - ms-network
+    depends_on:
+     - hotel-discovery-server
+  hotel-service:
+    container_name: hotel-service
+    image: hotel-service:latest
+    build:
+      context: ../hotel-services-demo
+      dockerfile: Dockerfile
+    ports:
+      - 8090:8090
+    environment:
+      EUREKA_HOST: hotel-discovery-server
+      MY_SQL_DB_HOST: mysqldb
+      MY_SQL_DB_USERNAME: root
+      MY_SQL_DB_PASSWORD: example
+      MQTT_HOST: host.docker.internal
+    networks:
+      - ms-network
+    depends_on:
+      - hotel-discovery-server
+  rating-service:
+    container_name: rating-service
+    build:
+      context: ../rating-services
+      dockerfile: Dockerfile
+    image: rating-service:latest
+    ports:
+      - 8092:8092
+    environment:
+      EUREKA_HOST: hotel-discovery-server
+      MONGO_DB_HOST: mongodb
+      MONGO_DB_PORT: 27017
+      MONGO_DB_USERNAME: root
+      MONGO_DB_PASSWORD: password
+      MQTT_HOST: host.docker.internal
+      USER_DATA_VALIDATION: false
+    networks:
+      - ms-network
+    depends_on:
+      - hotel-discovery-server
+networks:
+  ms-network:
+    driver: bridge
