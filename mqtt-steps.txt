@@ -1,0 +1,29 @@
+create new file broker.conf
+	listener 1883
+	allow_anonymous true
+	
+Run mosquitto 
+mosquitto -v -c broker.conf
+
+To subscribe to topic 
+mosquitto_sub  -t mytopic
+
+To publish message to topic
+mosquitto_pub -t mytopic  -m "Hello world"
+
+to add authentication
+	create new file pwfile
+	add username and pass
+		admin:12345678
+	encrypt password using
+		mosquitto_passwd -U pwfile(try running command prompt as administrator if you face any issue)
+
+add password file in config
+	open broker.conf and update as
+		listener 1883
+		password_file pwfile
+		allow_anonymous false
+Connect with password
+	mosquitto_sub  -t mytopic -u admin -P 12345678
+ 
+	
