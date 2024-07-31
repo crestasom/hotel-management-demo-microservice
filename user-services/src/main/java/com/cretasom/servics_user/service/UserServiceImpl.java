@@ -1,5 +1,6 @@
 package com.cretasom.servics_user.service;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -40,6 +41,10 @@ public class UserServiceImpl {
 
 	public List<User> getAllUser() {
 		return repo.findAll();
+	}
+
+	public List<User> getMultipleUsers(String userIds) {
+		return repo.findAllById(Arrays.asList(userIds.split(",")));
 	}
 
 }

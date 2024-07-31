@@ -3,7 +3,6 @@ package com.cretasom.servics_user.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,8 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.cretasom.servics_user.entity.User;
 import com.cretasom.servics_user.service.UserServiceImpl;
-
-import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/users")
@@ -37,5 +34,10 @@ public class UserController {
 	@GetMapping("/get/{id}")
 	public User getUser(@PathVariable String id) {
 		return userService.getUser(id);
+	}
+
+	@PostMapping("/get-multiple/")
+	public List<User> getMultipleUser(@RequestBody String ids) {
+		return userService.getMultipleUsers(ids);
 	}
 }

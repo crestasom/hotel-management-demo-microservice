@@ -34,4 +34,9 @@ public class HotelController {
 	public Hotel getHotel(@PathVariable String id) {
 		return hotelService.getHotel(id);
 	}
+
+	@PostMapping("/get-multiple/")
+	public List<Hotel> getMultipleHotels(@RequestBody String ids) {
+		return hotelService.getMultipleHotels(ids);
+	}
 }

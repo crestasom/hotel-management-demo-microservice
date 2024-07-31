@@ -3,12 +3,18 @@ package com.cretasom.servics_rating.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import com.cretasom.servics_rating.entity.Rating;
@@ -62,23 +68,82 @@ public class RatingServiceImpl {
 		return rating.isPresent() ? rating.get() : null;
 	}
 
-	public List<RatingDTO> getAllRating() {
+	public List<RatingDTO> getAllRatingMultiple(String requestId) {
+		requestId = StringUtils.hasText(requestId) ? requestId : UUID.randomUUID().toString();
+		logger.info(requestId + " : getAllRatingMultiple: Start get all ratings");
 		List<Rating> ratingList = repo.findAll();
+		logger.info(requestId + " : Found all ratings [{}]", ratingList.size());
 		String hotelUri = "http://HOTEL-SERVICES/hotel/get/";
-		String usersUri = "http://USER-SERVICES/users/get/";
-//		// return ratingList;
+		String usersUri = "http://USER-SERVICES/users/get/345345";
 //
+
+		logger.info(requestId + " : Start processing ratings");
+		List<RatingDTO> ratingDtoList = new ArrayList<>();
+		for (Rating r : ratingList) {
+			logger.info(requestId + " : start processing for rating [{}]", r);
+			RatingDTO rd = new RatingDTO();
+			rd.setComment(r.getComment());
+			rd.setRating(r.getRating());
+			logger.info(requestId + " : get hotel for hotelId [{}]", r.getHotelId());
+			Hotel h = restTemplate.getForObject(hotelUri + r.getHotelId(), Hotel.class);
+			logger.info(requestId + " : got hotel for hotelId [{}]", h);
+			rd.setHotelName(h.getName());
+			logger.info(requestId + " : get user for userid [{}]", r.getUserId());
+			User u = restTemplate.getForObject(usersUri + r.getUserId(), User.class);
+			logger.info(requestId + ": got user for userid [{}]", u);
+
+			ratingDtoList.add(rd);
+			logger.info(requestId + ": start processing for rating [{}]", r);
+		}
+		logger.info(requestId + " : complete processing ratings");
+		return ratingDtoList;
+	}
+
+	public List<RatingDTO> getAllRatingSingle(String requestId) {
+		requestId = StringUtils.hasText(requestId) ? requestId : UUID.randomUUID().toString();
+		logger.info(requestId + " : getAllRatingSingle: Start get all ratings");
+		List<Rating> ratingList = repo.findAll();
+		logger.info(requestId + " : Found all ratings [{}]", ratingList.size());
+		String hotelUri = "http://HOTEL-SERVICES/hotel/get-multiple/";
+		String usersUri = "http://USER-SERVICES/users/get-multiple/";
+//1,2,4
+		String hotelIdList = ratingList.stream().map(r -> r.getHotelId()).distinct().collect(Collectors.joining(","));
+		logger.info(requestId + " : get hotel list for hotelIds [{}]", hotelIdList);
+		HttpEntity<String> hotelRequest = new HttpEntity<String>(hotelIdList);
+		List<Hotel> hotelList = restTemplate
+				.exchange(hotelUri, HttpMethod.POST, hotelRequest, new ParameterizedTypeReference<List<Hotel>>() {
+				}).getBody();
+		logger.info(requestId + " : got hotel list for hotelIds [{}]", hotelList.size());
+
+		String userIdList = ratingList.stream().map(r -> r.getUserId()).distinct().collect(Collectors.joining(","));
+		HttpEntity<String> userRequest = new HttpEntity<String>(userIdList);
+		logger.info(requestId + " : get user list for userIds [{}]", userIdList);
+		List<User> userList = restTemplate
+				.exchange(usersUri, HttpMethod.POST, userRequest, new ParameterizedTypeReference<List<User>>() {
+				}).getBody();
+		logger.info(requestId + " : got user list for userIds [{}]", userList.size());
+		logger.info(requestId + " : Start processing ratings");
 		List<RatingDTO> ratingDtoList = new ArrayList<>();
 		for (Rating r : ratingList) {
 			RatingDTO rd = new RatingDTO();
 			rd.setComment(r.getComment());
 			rd.setRating(r.getRating());
-			Hotel h = restTemplate.getForObject(hotelUri + r.getHotelId(), Hotel.class);
-			rd.setHotelName(h.getName());
-			User u = restTemplate.getForObject(usersUri + r.getUserId(), User.class);
-			rd.setUserName(u.getName());
+			String hotelName = hotelList.stream().filter(h -> h.getId().equals(r.getHotelId())).findFirst().get()
+					.getName();
+
+			// Hotel h = restTemplate.getForObject(hotelUri + r.getHotelId(), Hotel.class);
+			// logger.info(requestId + " : got hotel for hotelId [{}]", h);
+			rd.setHotelName(hotelName);
+//			logger.info(requestId + " : get user for userid [{}]", r.getUserId());
+			// User u = restTemplate.getForObject(usersUri + r.getUserId(), User.class);
+			// logger.info(requestId + ": got user for userid [{}]", u);
+			String userName = userList.stream().filter(u -> u.getId().equals(r.getUserId())).findFirst().get()
+					.getName();
+			rd.setUserName(userName);
+
 			ratingDtoList.add(rd);
 		}
+		logger.info(requestId + " : complete processing ratings");
 		return ratingDtoList;
 	}
 

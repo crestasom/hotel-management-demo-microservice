@@ -1,5 +1,6 @@
 package com.cretasom.servics_hotel.service;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -44,6 +45,11 @@ public class HotelServiceImpl {
 
 	public List<Hotel> getAllHotel() {
 		return repo.findAll();
+	}
+
+	public List<Hotel> getMultipleHotels(String ids) {
+		// return
+		return repo.findAllById(Arrays.asList(ids.split(",")));
 	}
 
 }
