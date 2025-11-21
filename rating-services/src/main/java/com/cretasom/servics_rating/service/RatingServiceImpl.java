@@ -40,6 +40,8 @@ public class RatingServiceImpl {
 //	int i = 1;
 	@Autowired
 	private RestTemplate restTemplate;
+	@Autowired
+	private HotelService hotelService;
 	@Value("${validate.data}")
 	private boolean validateData;
 
@@ -110,9 +112,7 @@ public class RatingServiceImpl {
 		String hotelIdList = ratingList.stream().map(r -> r.getHotelId()).distinct().collect(Collectors.joining(","));
 		logger.info(requestId + " : get hotel list for hotelIds [{}]", hotelIdList);
 		HttpEntity<String> hotelRequest = new HttpEntity<String>(hotelIdList);
-		List<Hotel> hotelList = restTemplate
-				.exchange(hotelUri, HttpMethod.POST, hotelRequest, new ParameterizedTypeReference<List<Hotel>>() {
-				}).getBody();
+		List<Hotel> hotelList = hotelService.fetchHotelList(hotelIdList);
 		logger.info(requestId + " : got hotel list for hotelIds [{}]", hotelList.size());
 
 		String userIdList = ratingList.stream().map(r -> r.getUserId()).distinct().collect(Collectors.joining(","));

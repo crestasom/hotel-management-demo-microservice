@@ -10,10 +10,11 @@ docker build --tag=hotel-discovery-server:latest .
 3. Run the docker image 
 docker run -d  --name service-discovery hotel-discovery-server
 
-4. Bind port(to expose the port to external world)
+4. Bind port(to expose the port to external world) format -> -p <host port>:<container port to be mapped>
 docker run -d  -p 8096:8096 --name service-discovery hotel-discovery-server
 
 5. bind to network( to make different services communicate with each other)
+##to create network
 docker network create my-network
 docker network ls
 docker run -d  -p 8096:8096 --network my-network --name service-discovery hotel-discovery-server
